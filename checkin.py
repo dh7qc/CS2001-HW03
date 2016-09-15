@@ -1,4 +1,5 @@
 # checkin.py
+from datetime import datetime
 
 
 class CheckIn:
@@ -28,7 +29,7 @@ class CheckIn:
         self.name = name
         self.pokeball = pokeball
         self.location = location
-        self.time = time
+        self.time = datetime.strptime(time, "%Y-%m-%d  %H:%M:%S")
 
     def __lt__(self, other):
         """Overloaded < operator.
