@@ -1,6 +1,7 @@
 # checkin.py
 
-class CheckIn(name, pokeball, location, time):
+
+class CheckIn:
     """A check-in of a Team Rocket Delivery agent at a specific
     location/time.
 
@@ -31,39 +32,39 @@ class CheckIn(name, pokeball, location, time):
 
     def __lt__(self, other):
         """Overloaded < operator.
-        
+
         -Returns True if this object's time member variable is less than
-        other's time. 
+        other's time.
 
-        :param CheckIn other: The check-in we're comparing against. 
+        :param CheckIn other: The check-in we're comparing against.
 
-        :returns: True if this object's time is less than the other's time. 
+        :returns: True if this object's time is less than the other's time.
         :rtype: bool
         """
         return self.time < other.time
 
     def __le__(self, other):
-        """Overloaded <= operator. 
+        """Overloaded <= operator.
 
         -Returns True if this object's time member variable is less than or
         equal to the other's time.
 
-        :param CheckIn other: The check-in we're comparing against. 
+        :param CheckIn other: The check-in we're comparing against.
 
-        :returns: True if this object's time is less than or equal to 
-        the other's time. 
+        :returns: True if this object's time is less than or equal to
+        the other's time.
 
         :rtype: bool
         """
         return self.time <= other.time
 
     def __gt__(self, other):
-        """Overloaded > operator. 
+        """Overloaded > operator.
 
         -Returns True if this object's time member variable is greater than
         the other's time.
 
-        :param CheckIn other: The check-in we're comparing against. 
+        :param CheckIn other: The check-in we're comparing against.
 
         :returns: True if this object's time is greater than the other's time.
 
@@ -72,29 +73,29 @@ class CheckIn(name, pokeball, location, time):
         return self.time > other.time
 
     def __ge__(self, other):
-        """Overloaded >= operator. 
+        """Overloaded >= operator.
 
         -Returns True if this object's time member variable is greater than
         or equal to the other's time.
 
-        :param CheckIn other: The check-in we're comparing against. 
+        :param CheckIn other: The check-in we're comparing against.
 
-        :returns: True if this object's time is greater than or equal to 
-        the other's time. 
+        :returns: True if this object's time is greater than or equal to
+        the other's time.
 
         :rtype: bool
         """
-        return self.time >= other.time 
+        return self.time >= other.time
 
     def __str__(self):
-        """ 
-        -Called by str() to turn a CheckIn into a str. 
+        """
+        -Called by str() to turn a CheckIn into a str.
 
         :returns: This CheckIn as a str.
 
         :rtype: str
         """
-        output = ("{1} at {2} with a/an {3} ({4})")
-            .format(self.name, self.location, self.pokeball, self.time)
+        out = ("{} at {} with {} ({})")
+        out = out.format(self.name, self.location, self.pokeball, self.time)
 
-        return output
+        return out
