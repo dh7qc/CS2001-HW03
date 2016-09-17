@@ -40,7 +40,34 @@ def load_timeline(filename):
         file. Note that this is thrown by the open() function.
 
     """
-    pass
+    my_dict = {}
+    my_tup = ()
+
+    with open(filename) as csvfile:
+        reader = csv.reader(csvfile)
+
+        # Put the agent's name and initial Pokemon into a dictionary
+        for row in reader:
+            # Row index: 0 = name, 4 = initial pokemon
+            if row[4] != '':
+                my_dict[row[0]] = row[4]
+
+    with open(filename) as csvfile:
+        reader = csv.reader(csvfile)
+
+        # Put checkins into a timeline
+        timeline = CheckInTimeline()
+        for row in reader:
+            # Read data to checkins
+            # Row index: 0 = name, 1 = ball type, 2 = location, 3 = time
+            chk = CheckIn(row[0], Pokeball(int(row[1])), row[2], row[3])
+
+            # Add checkin to timeline
+            timeline.add(chk)
+
+        my_tup = (my_dict, timeline)
+
+    return my_tup
 
 
 def main(args):
@@ -80,7 +107,43 @@ def main(args):
     :returns: None
 
     """
-    print(args)
+    # Unpack dictionary and timeline
+    dict, timeline = load_timeline(args.checkins)
+
+    # --exchanges
+    if args.exchanges is True:
+        for p1, p2 in timeline.rendezvous():
+            if p1.pokeball == p2.pokeball:
+                n1 = p1.name
+                n2 = p2.name
+                msg = '{} meets with {} to exchange {} for {}'
+                msg = msg.format(n1, n2, dict[n1], dict[n2])
+                print(msg)
+
+    # --skip
+    if args.skip is True:
+        for p1, p2 in timeline.rendezvous():
+            if p1.pokeball != p2.pokeball:
+                name1 = p1.name
+                name2 = p2.name
+                msg = '{} (with {}) meets with {} (with {}), '
+                msg += ('but nothing happened.')
+                msg = msg.format(name1, p1.pokeball, name2, p2.pokeball)
+                print(msg)
+
+    # --pokemon
+    if args.pokemon != '':
+        for key in dict.keys():
+            if dict[key] == args.pokemon:
+                break
+        msg = '{} had the {}'
+        msg = msg.format(key, args.pokemon)
+        print(msg)
+
+    # Pretty print the dictionary
+    if args.pokemon == '':
+        pp = pprint.PrettyPrinter(4)
+        pp.pprint(dict)
 
 
 if __name__ == '__main__':
