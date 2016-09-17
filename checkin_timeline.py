@@ -115,17 +115,28 @@ class CheckInTimeline:
         input data.
         """
 
+        # Process windows to check for rendezvous.
         for window in self.windows(window_size):
+            # Starts with first checkin in window tuple within time window
             tup = (window[0],)
             first_checkin_loc = window[0].location
+
+            # Compares first checkin window with rest to check if they
+            # were at the same location in that period.
             for window2 in window[1:]:
                 other_checkin = window2.location
+
+                # If so, add that to a rendezvous tuple
                 if first_checkin_loc == other_checkin:
                     tup += (window2,)
+
+            # If the tuple has less than two items, no rendezvous occurred
             if len(tup) < 2:
                 tup = ()
+            # Only yield the tup if rendezvous had two members
             elif len(tup) == 2:
                 yield tup
+            # Otherwise rise an exception
             else:
-                # raise exception
-                pass
+                error_msg = 'Too many members detected at rendezvous'
+                raise DataError(error_msg)
