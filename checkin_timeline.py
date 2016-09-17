@@ -1,4 +1,6 @@
 # checkin_timeline.py
+#from datetime import datetime, timedelta
+import datetime
 
 class DataError(Exception):
     """An Exception class raised by CheckInTimeline.
@@ -28,7 +30,7 @@ class CheckInTimeline:
 
         Initializes a CheckInTimeline.
         """
-        pass
+        self.checkins = []
 
     def add(self, checkin):
         """
@@ -43,9 +45,11 @@ class CheckInTimeline:
 
         :returns: None
         """
-        pass
+        # Add checkin to end of checkins list and then sort the list. 
+        self.checkins.append(checkin) 
+        self.checkins = sorted(self.checkins)
 
-    def windows(self, window_size=datetime.timedelta(0,3600))
+    def windows(self, window_size=datetime.timedelta(0,3600)):
         """A generator for iterating over windows of a given size.
 
         -Iterates over the timeline's collection of CheckIns, yielding
@@ -62,13 +66,37 @@ class CheckInTimeline:
 
         :rtype: iterable
         """
-        pass
 
-    def rendezvous(self, window_size=datetime.timedelta(0, 3600))
+        # Number of checkins to iterate over
+        size = len(self.checkins)
+
+        for index in range(size):
+            # Declare empty tuple for each run
+            tup = ()
+
+            # Gets the initial checkin's time
+            checkin1 = self.checkins[index]
+            time1 = checkin1.time
+
+            # Compares that time to the following times
+            for index2 in range(index, size):
+                checkin2 = self.checkins[index2]
+                time2 = checkin2.time
+
+                # Adds the time to the tuple if within window_size
+                if (time2 - time1) < window_size:
+                    tup += (checkin2,)
+                else:
+                    break
+
+            yield tup
+
+
+    def rendezvous(self, window_size=datetime.timedelta(0, 3600)):
         """A generator for chronologically iterating over rendezvous.
         
         -Iterates over windows (of duration window_size) to determine
-        which of those windows contain a rendezvous. We dect a rendezvous
+        which of those windows contain a rendezvous. We detect a rendezvous
         for a window by checking whether the first check-in in the window
         shares a location with any other check-ins in the window.
 
@@ -86,4 +114,18 @@ class CheckInTimeline:
         members, a DataError is raised. Something must be wrong with the
         input data. 
         """
-        pass
+
+        for window in self.windows(window_size):
+            tup = (window[0],)
+            first_checkin_loc = window[0].location
+            for window2 in window[1:]:
+                other_checkin = window2.location
+                if first_checkin_loc == other_checkin:
+                    tup += (window2,)
+            if len(tup) < 2:
+                tup = ()
+            elif len(tup) == 2:
+                yield tup
+            else:
+                # raise exception
+                pass
