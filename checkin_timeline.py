@@ -1,22 +1,23 @@
 # checkin_timeline.py
-#from datetime import datetime, timedelta
 import datetime
+
 
 class DataError(Exception):
     """An Exception class raised by CheckInTimeline.
 
     Bases: Exception
 
-    -This exception is raised whenever a CheckInTimeline detects 
+    -This exception is raised whenever a CheckInTimeline detects
     a semantic error with its CheckIns.
     """
     pass
+
 
 class CheckInTimeline:
     """A timeline of check-ins.
 
     -Represents a timeline of recorded check-ins: ordered chronologically
-    from least recent to most recent. 
+    from least recent to most recent.
 
     -Instances have one member variable:
         checkins: a list that stores the sequence of CheckIn instances.
@@ -45,11 +46,11 @@ class CheckInTimeline:
 
         :returns: None
         """
-        # Add checkin to end of checkins list and then sort the list. 
-        self.checkins.append(checkin) 
+        # Add checkin to end of checkins list and then sort the list.
+        self.checkins.append(checkin)
         self.checkins = sorted(self.checkins)
 
-    def windows(self, window_size=datetime.timedelta(0,3600)):
+    def windows(self, window_size=datetime.timedelta(0, 3600)):
         """A generator for iterating over windows of a given size.
 
         -Iterates over the timeline's collection of CheckIns, yielding
@@ -91,10 +92,9 @@ class CheckInTimeline:
 
             yield tup
 
-
     def rendezvous(self, window_size=datetime.timedelta(0, 3600)):
         """A generator for chronologically iterating over rendezvous.
-        
+
         -Iterates over windows (of duration window_size) to determine
         which of those windows contain a rendezvous. We detect a rendezvous
         for a window by checking whether the first check-in in the window
@@ -107,12 +107,12 @@ class CheckInTimeline:
         corresponds to two agents who met at the same location within
         window_size of one antother. Pairs are tuples, and each will
         have exactly two items.
-        
+
         :rtype: iterable
-        
-        :raises DataError: If we detect a rendezvous has more than two 
+
+        :raises DataError: If we detect a rendezvous has more than two
         members, a DataError is raised. Something must be wrong with the
-        input data. 
+        input data.
         """
 
         for window in self.windows(window_size):
