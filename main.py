@@ -4,7 +4,7 @@ import pprint
 import sys
 
 from checkin import CheckIn
-from checkin_timeline import CheckInTimeline
+from checkin_timeline import CheckInTimeline, DataError
 from pokeball import Pokeball
 
 
@@ -100,7 +100,7 @@ def main(args):
     :returns: None
 
     """
-    # Try to unpack dictionary and timeline, otherwise catch errors.
+    # Try to unpack dictionary and timeline, otherwise catch errors and exit.
     try:
         dict, timeline = load_timeline(args.checkins)
     except OSError as e:
@@ -109,44 +109,49 @@ def main(args):
     except ValueError:
         print('ValueError: Problem loading data from a row in the file.')
         sys.exit(1)
-    except DataError:
-        print('DataError: semantically incorrect data, abort.')
+    except DataError as e:
+        print(e)
         sys.exit(1)
 
-    # --exchanges,: prints message when pokeballs were exchanged.
-    if args.exchanges is True:
-        # Check if each p1 and p2 have same pokeball type.
+    if args.skip is True or args.exchanges is True:
         for p1, p2 in timeline.rendezvous():
-            if p1.pokeball == p2.pokeball:
-                n1 = p1.name
-                n2 = p2.name
-                msg = '{} meets with {} to exchange {} for {}'
-                msg = msg.format(n1, n2, dict[n1], dict[n2])
-                print(msg)
-
-    # --skip: prints message when pokeballs were not exchanged.
-    if args.skip is True:
-        for p1, p2 in timeline.rendezvous():
-        # Check if each p1 and p2 don't have same pokeball type.
-            if p1.pokeball != p2.pokeball:
-                name1 = p1.name
-                name2 = p2.name
+            # --skip: prints message when pokeballs were not exchanged.
+            # Check if each p1 and p2 don't have same pokeball type.
+            if p1.pokeball != p2.pokeball and args.skip is True:
+                n1, n2 = p1.name, p2.name
                 msg = '{} (with {}) meets with {} (with {}), '
                 msg += 'but nothing happened.'
-                msg = msg.format(name1, p1.pokeball, name2, p2.pokeball)
+                msg = msg.format(n1, p1.pokeball, n2, p2.pokeball)
                 print(msg)
 
-    # --pokemon: Checks who has the pokeball
-    if args.pokemon != '':
+            # --exchanges,: prints message when pokeballs were exchanged.
+            # Check if each p1 and p2 have same pokeball type.
+            if p1.pokeball == p2.pokeball and args.exchanges is True:
+                n1, n2 = p1.name, p2.name
+                msg = '{} meets with {} to exchange {} for {}'
+                msg = msg.format(n1, n2, dict[n1], dict[n2])
+                # Make the exchange.
+                dict[n1], dict[n2] = dict[n2], dict[n1]
+                print(msg)
+
+    # If --exchanges wasn't called, still need to update dictionary.
+    if args.exchanges is False:
+        for p1, p2 in timeline.rendezvous():
+            if p1.pokeball == p2.pokeball:
+                n1, n2 = p1.name, p2.name
+                dict[n1], dict[n2] = dict[n2], dict[n1]
+
+    # --pokemon: Checks who has the pokeball.
+    if args.pokemon != '' or args.skip:
         for key in dict.keys():
             if dict[key] == args.pokemon:
+                msg = '{} had the {}'
+                msg = msg.format(key, args.pokemon)
+                print(msg)
                 break
-        msg = '{} had the {}'
-        msg = msg.format(key, args.pokemon)
-        print(msg)
 
-    # Pretty print the dictionary
-    else:
+    # Update dict for the exchanges and pretty print it.
+    if args.pokemon == '':
         pp = pprint.PrettyPrinter(4)
         pp.pprint(dict)
 
