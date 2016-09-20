@@ -138,5 +138,5 @@ class CheckInTimeline:
                 yield tup
             # Otherwise rise an exception
             else:
-                error_msg = 'Too many members detected at rendezvous'
+                error_msg = 'DataError: Too many members at rendezvous'
                 raise DataError(error_msg)
