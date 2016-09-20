@@ -41,33 +41,26 @@ def load_timeline(filename):
 
     """
     my_dict = {}
-    my_tup = ()
+    timeline = CheckInTimeline()
 
     with open(filename) as csvfile:
         reader = csv.reader(csvfile)
 
-        # Put the agent's name and initial Pokemon into a dictionary
         for row in reader:
-            # Row index: 0 = name, 4 = initial pokemon
-            if row[4] != '':
-                my_dict[row[0]] = row[4]
-
-    with open(filename) as csvfile:
-        reader = csv.reader(csvfile)
-
-        # Put checkins into a timeline
-        timeline = CheckInTimeline()
-        for row in reader:
-            # Read data to checkins
+            # Put agent name and initial Pokemon into a dictionary
             # Row index: 0 = name, 1 = ball type, 2 = location, 3 = time
-            chk = CheckIn(row[0], Pokeball(int(row[1])), row[2], row[3])
+            name, ball_type, location, time, init_poke = row
+            if init_poke != '':
+                my_dict[name] = init_poke
+
+            # Read data to checkins
+            input = (name, Pokeball(int(ball_type)), location, time)
+            checkin = CheckIn(*input)
 
             # Add checkin to timeline
-            timeline.add(chk)
+            timeline.add(checkin)
 
-        my_tup = (my_dict, timeline)
-
-    return my_tup
+    return (my_dict, timeline)
 
 
 def main(args):
@@ -107,11 +100,22 @@ def main(args):
     :returns: None
 
     """
-    # Unpack dictionary and timeline
-    dict, timeline = load_timeline(args.checkins)
+    # Try to unpack dictionary and timeline, otherwise catch errors.
+    try:
+        dict, timeline = load_timeline(args.checkins)
+    except OSError as e:
+        print(e)
+        sys.exit(1)
+    except ValueError:
+        print('ValueError: Problem loading data from a row in the file.')
+        sys.exit(1)
+    except DataError:
+        print('DataError: semantically incorrect data, abort.')
+        sys.exit(1)
 
-    # --exchanges
+    # --exchanges,: prints message when pokeballs were exchanged.
     if args.exchanges is True:
+        # Check if each p1 and p2 have same pokeball type.
         for p1, p2 in timeline.rendezvous():
             if p1.pokeball == p2.pokeball:
                 n1 = p1.name
@@ -120,18 +124,19 @@ def main(args):
                 msg = msg.format(n1, n2, dict[n1], dict[n2])
                 print(msg)
 
-    # --skip
+    # --skip: prints message when pokeballs were not exchanged.
     if args.skip is True:
         for p1, p2 in timeline.rendezvous():
+        # Check if each p1 and p2 don't have same pokeball type.
             if p1.pokeball != p2.pokeball:
                 name1 = p1.name
                 name2 = p2.name
                 msg = '{} (with {}) meets with {} (with {}), '
-                msg += ('but nothing happened.')
+                msg += 'but nothing happened.'
                 msg = msg.format(name1, p1.pokeball, name2, p2.pokeball)
                 print(msg)
 
-    # --pokemon
+    # --pokemon: Checks who has the pokeball
     if args.pokemon != '':
         for key in dict.keys():
             if dict[key] == args.pokemon:
@@ -141,7 +146,7 @@ def main(args):
         print(msg)
 
     # Pretty print the dictionary
-    if args.pokemon == '':
+    else:
         pp = pprint.PrettyPrinter(4)
         pp.pprint(dict)
 
